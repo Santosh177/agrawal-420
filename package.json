@@ -1,0 +1,40 @@
+{
+  "name": "namkeen-420",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "seed": "npm run seed:dev",
+    "seed:dev": "NODE_ENV=development tsx src/backend/seed/seed.ts",
+    "seed:prod": "NODE_ENV=production tsx src/backend/seed/seed.ts"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cloudinary": "^2.10.0",
+    "jose": "^5.9.6",
+    "mongoose": "^8.8.3",
+    "next": "16.2.7",
+    "next-cloudinary": "^6.17.5",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "zod": "^3.23.8",
+    "zustand": "^5.0.1"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^20.17.9",
+    "@types/react": "^19.2.16",
+    "@types/react-dom": "^19.2.3",
+    "autoprefixer": "^10.4.20",
+    "dotenv": "^16.4.7",
+    "eslint": "^9.39.4",
+    "eslint-config-next": "16.2.7",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.15",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}

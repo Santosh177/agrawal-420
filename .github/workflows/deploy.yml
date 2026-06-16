@@ -1,0 +1,70 @@
+name: Deploy to AWS EC2
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    name: Build & deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        env:
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+          WA_NUMBER: ${{ secrets.NEXT_PUBLIC_BUSINESS_WHATSAPP_NUMBER }}
+          APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL }}
+          CDN_NAME: ${{ secrets.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME }}
+          CDN_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
+          CDN_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
+          CDN_FOLDER: ${{ secrets.CLOUDINARY_UPLOAD_FOLDER }}
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          envs: MONGODB_URI,JWT_SECRET,ADMIN_EMAIL,ADMIN_PASSWORD,WA_NUMBER,APP_URL,CDN_NAME,CDN_KEY,CDN_SECRET,CDN_FOLDER
+          command_timeout: 20m
+          script: |
+            set -e
+
+            # ── Load nvm so the node/npm commands are available ──────────────
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
+            cd ~/namkeen420
+
+            # ── Pull latest code ─────────────────────────────────────────────
+            git pull origin main
+
+            # ── Write production env file from GitHub Secrets ────────────────
+            cat > .env.production.local << ENVFILE
+            MONGODB_URI=${MONGODB_URI}
+            JWT_SECRET=${JWT_SECRET}
+            ADMIN_EMAIL=${ADMIN_EMAIL}
+            ADMIN_PASSWORD=${ADMIN_PASSWORD}
+            NEXT_PUBLIC_BUSINESS_WHATSAPP_NUMBER=${WA_NUMBER}
+            NEXT_PUBLIC_APP_URL=${APP_URL}
+            NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=${CDN_NAME}
+            CLOUDINARY_API_KEY=${CDN_KEY}
+            CLOUDINARY_API_SECRET=${CDN_SECRET}
+            CLOUDINARY_UPLOAD_FOLDER=${CDN_FOLDER}
+            ENVFILE
+
+            # ── Install dependencies ─────────────────────────────────────────
+            npm ci
+
+            # ── Build ────────────────────────────────────────────────────────
+            NODE_ENV=production npm run build
+
+            # ── Restart app (zero-downtime reload) ───────────────────────────
+            pm2 reload ecosystem.config.js --env production \
+              || pm2 start ecosystem.config.js --env production
+
+            pm2 save
+
+            echo "✅ Deployment complete"
