@@ -18,7 +18,7 @@ async function isValidAdmin(token: string | undefined): Promise<boolean> {
   }
 }
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Only guard admin pages here; admin APIs enforce auth in their handlers.
