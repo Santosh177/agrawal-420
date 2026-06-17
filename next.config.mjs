@@ -1,6 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  allowedDevOrigins: [
+    "ec2-13-234-17-183.ap-south-1.compute.amazonaws.com",
+  ],
   images: {
     remotePatterns: [
       {
